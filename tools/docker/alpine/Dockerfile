@@ -1,13 +1,16 @@
 FROM docker.io/i386/alpine:3.21.0
 
 ENV KERNEL=virt
-ENV ADDPKGS=nodejs
+ENV ADDPKGS="nodejs oils-for-unix"
 
-RUN apk add openrc alpine-base agetty alpine-conf linux-$KERNEL linux-firmware-none $ADDPKGS
+RUN echo https://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories
+RUN apk add mkinitfs openrc alpine-base agetty alpine-conf linux-$KERNEL linux-firmware-none $ADDPKGS
 
 RUN sed -i 's/getty 38400 tty1/agetty --autologin root tty1 linux/' /etc/inittab
 RUN echo 'ttyS0::respawn:/sbin/agetty --autologin root -s ttyS0 115200 vt100' >> /etc/inittab
 RUN echo "root:" | chpasswd
+RUN rm /bin/sh; ln /usr/bin/oils-for-unix /bin/sh
+RUN rm /usr/bin/ysh; ln /usr/bin/oils-for-unix /usr/bin/ysh
 
 RUN setup-hostname localhost
 
